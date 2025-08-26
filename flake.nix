@@ -17,9 +17,19 @@
               config.permittedInsecurePackages = [ "libsoup-2.74.3" ];
             };
             naersk' = pkgs.callPackage naersk {};
+            # Derive GUI download info from workspace version and system
+            cargoToml = builtins.fromTOML (builtins.readFile ./Cargo.toml);
+            version = cargoToml.workspace.package.version;
+            archSuffix = if pkgs.stdenv.hostPlatform.system == "x86_64-linux" then "x86_64" else "aarch64";
+            releaseTag = "v${version}";
+            guiUrl = "https://github.com/yuezk/GlobalProtect-openconnect/releases/download/${releaseTag}/gpgui_${archSuffix}.bin.tar.xz";
+            guiSha256 = if archSuffix == "x86_64"
+              then "sha256-a2anev4k8VJEezbcY8paBf/6NQYyCSYOUJ2qNsGIULM="
+              else "sha256-OzeCY9YSE4bZLkojSROIE2Yd5FJrw/ia77X6Wmu0q14=";
+            gpguiTarball = pkgs.fetchurl { url = guiUrl; sha256 = guiSha256; };
           });
     in {
-      packages = forEachSupportedSystem ({ pkgs, naersk', ... }: {
+      packages = forEachSupportedSystem ({ pkgs, naersk', gpguiTarball, ... }: {
         default = naersk'.buildPackage {
           src = ./.;
 
@@ -29,6 +39,7 @@
             pkg-config
             perl
             jq
+            xz
           ];
 
           # C deps for tauri/wry and your crates
@@ -61,6 +72,22 @@
             preBuild = ''
               mkdir -p "$NIX_BUILD_TOP/dummy-src"
               ln -sfn "$PWD/target" "$NIX_BUILD_TOP/dummy-src/target"
+            '';
+
+            # Bundle the prebuilt gpgui binary into $out/bin so gpservice can launch it
+            # This avoids runtime self-updating (which is incompatible with Nix store)
+            postInstall = ''
+              echo "Installing bundled gpgui from ${gpguiTarball}"
+              mkdir -p "$out/bin"
+              workdir=$(mktemp -d)
+              tar -xJf ${gpguiTarball} -C "$workdir"
+              # find extracted gpgui binary and install it
+              f=$(find "$workdir" -type f -name gpgui | head -n1)
+              if [ -z "$f" ]; then
+                echo "gpgui binary not found in archive" >&2
+                exit 1
+              fi
+              install -Dm755 "$f" "$out/bin/gpgui"
             '';
           };
         };
