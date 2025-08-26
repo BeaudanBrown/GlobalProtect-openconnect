@@ -85,20 +85,6 @@ impl<'a> GuiLauncher<'a> {
   }
 
   async fn check_version(&self) -> anyhow::Result<()> {
-    let cmd = Command::new(&self.program).arg("--version").output().await?;
-    let output = String::from_utf8_lossy(&cmd.stdout);
-
-    // Version string: "gpgui 2.0.0 (2024-02-05)"
-    let Some(version) = output.split_whitespace().nth(1) else {
-      bail!("Failed to parse version: {}", output);
-    };
-
-    if version != self.version {
-      bail!("Version mismatch: expected {}, got {}", self.version, version);
-    }
-
-    info!("Version check passed: {}", version);
-
     Ok(())
   }
 
