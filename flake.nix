@@ -40,6 +40,8 @@
             perl
             jq
             xz
+            autoPatchelfHook
+            patchelf
           ];
 
           # C deps for tauri/wry and your crates
@@ -49,6 +51,37 @@
             gtk3
             webkitgtk_4_1
             openssl
+            # runtime libs for prebuilt gpgui (GTK/WebKit/Tauri)
+            glib
+            pango
+            cairo
+            gdk-pixbuf
+            atk
+            harfbuzz
+            libepoxy
+            libglvnd
+            freetype
+            fontconfig
+            zlib
+            dbus
+            alsa-lib
+            nss
+            nspr
+            wayland
+            libxkbcommon
+            libdrm
+            libgbm
+            xorg.libX11
+            xorg.libXcursor
+            xorg.libXrandr
+            xorg.libXext
+            xorg.libXi
+            xorg.libXdamage
+            xorg.libXcomposite
+            xorg.libXrender
+            xorg.libXfixes
+            xorg.libxcb
+            stdenv.cc.cc
           ];
 
           overrideMain = { ... }: {
