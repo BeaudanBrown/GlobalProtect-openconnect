@@ -82,6 +82,7 @@
             xorg.libXfixes
             xorg.libxcb
             stdenv.cc.cc
+            libayatana-appindicator
           ];
 
           overrideMain = { ... }: {
@@ -121,6 +122,11 @@
                 exit 1
               fi
               install -Dm755 "$f" "$out/bin/gpgui"
+
+              # Ensure runtime libs are discoverable by the prebuilt binary
+              rpath="${pkgs.lib.makeLibraryPath [ pkgs.gtk3 pkgs.webkitgtk_4_1 pkgs.libsoup_2_4 pkgs.openssl pkgs.libayatana-appindicator ]}"
+              echo "Setting RPATH to: $rpath"
+              patchelf --set-rpath "$rpath" "$out/bin/gpgui"
             '';
           };
         };
