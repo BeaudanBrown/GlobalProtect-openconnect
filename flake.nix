@@ -1,8 +1,14 @@
 {
   inputs = {
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-unstable";
-    naersk.url = "github:nix-community/naersk";
-    rust-overlay.url = "github:oxalica/rust-overlay";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-25.05";
+    naersk = {
+      url = "github:nix-community/naersk";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+    rust-overlay = {
+      url = "github:oxalica/rust-overlay";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = { self, nixpkgs, naersk, rust-overlay }:
@@ -24,7 +30,7 @@
             releaseTag = "v${version}";
             guiUrl = "https://github.com/yuezk/GlobalProtect-openconnect/releases/download/${releaseTag}/gpgui_${archSuffix}.bin.tar.xz";
             guiSha256 = if archSuffix == "x86_64"
-              then "sha256-a2anev4k8VJEezbcY8paBf/6NQYyCSYOUJ2qNsGIULM="
+              then "sha256-S8NDRA28KGUIq2kSBCi1yjaHG9PtUTtqbzjx4sdaT4s="
               else "sha256-OzeCY9YSE4bZLkojSROIE2Yd5FJrw/ia77X6Wmu0q14=";
             gpguiTarball = pkgs.fetchurl { url = guiUrl; sha256 = guiSha256; };
           });
